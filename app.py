@@ -1,8 +1,8 @@
 import streamlit as st
-import openai
+from anthropic import Anthropic
 
-# Replace the text below with your OpenAI API key (it should start with 'sk-')
-openai.api_key = "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" # ← Replace this with your actual API key
+# Initialize Anthropic client with your API key
+anthropic = Anthropic(api_key="your-anthropic-api-key")  # Replace with your actual API key
 
 # Set page configuration
 st.set_page_config(
@@ -26,7 +26,7 @@ st.markdown("""
 # Title and description
 st.title("✉️ Academic Email Generator")
 st.markdown("""
-This tool helps you generate professional academic emails using AI. Simply fill in the details
+This tool helps you generate professional academic emails using Claude AI. Simply fill in the details
 below, and the AI will help craft a well-structured email for you.
 """)
 
@@ -78,21 +78,26 @@ Requirements:
 2. Be clear and concise
 3. Follow proper email etiquette
 4. Match the specified tone
-5. Include greeting and sign-off"""
-                
-                # Generate email using ChatGPT
-                completion = openai.Completion.create(
-                    engine="text-davinci-003",
-                    prompt=prompt,
+5. Include greeting and sign-off
+
+Please generate a well-structured email that follows all these requirements."""
+
+                # Generate email using Claude
+                message = anthropic.messages.create(
+                    model="claude-3-opus-20240229",
                     max_tokens=1000,
                     temperature=0.7,
-                    top_p=1,
-                    frequency_penalty=0,
-                    presence_penalty=0
+                    system="You are a professional email writing assistant. You help craft well-structured, formal emails while maintaining appropriate tone and etiquette.",
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ]
                 )
                 
-                if completion.choices[0].text:
-                    email_text = completion.choices[0].text.strip()
+                if message.content:
+                    email_text = message.content[0].text.strip()
                     # Display the generated email in a nice format
                     st.markdown("### Generated Email:")
                     st.markdown("---")
@@ -109,6 +114,7 @@ Requirements:
                 
             except Exception as e:
                 st.error(f"Error details: {str(e)}")
+                st.info("Please make sure your Claude API key is correct.")
 
 # Add helpful tips in the sidebar
 with st.sidebar:
@@ -129,4 +135,10 @@ with st.sidebar:
     - Recommendation letter requests
     - Meeting scheduling
     - Research guidance
+    """)
+    
+    st.markdown("### ℹ️ About")
+    st.markdown("""
+    This app uses Claude, a powerful AI model by Anthropic, 
+    to help you generate professional academic emails.
     """) 
