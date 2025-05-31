@@ -1,8 +1,18 @@
 import streamlit as st
-from anthropic import Anthropic
+import anthropic
+import os
+from dotenv import load_dotenv
 
-# Initialize Anthropic client with your API key
-anthropic = Anthropic(api_key="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")  # Replace with your actual API key
+# Load environment variables
+load_dotenv()
+
+# Get API key from environment variable or Streamlit secrets
+api_key = os.getenv("ANTHROPIC_API_KEY")
+if not api_key and hasattr(st.secrets, "ANTHROPIC_API_KEY"):
+    api_key = st.secrets.ANTHROPIC_API_KEY
+
+# Initialize Anthropic client
+client = anthropic.Client(api_key=api_key)
 
 # Set page configuration
 st.set_page_config(
@@ -22,6 +32,12 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+
+# Check for API key
+if not api_key:
+    st.error("Please set your Anthropic API key in the .env file or Streamlit secrets.")
+    st.info("Create a .env file in your project directory and add: ANTHROPIC_API_KEY=your-api-key")
+    st.stop()
 
 # Title and description
 st.title("✉️ Academic Email Generator")
@@ -83,21 +99,15 @@ Requirements:
 Please generate a well-structured email that follows all these requirements."""
 
                 # Generate email using Claude
-                message = anthropic.messages.create(
-                    model="claude-3-opus-20240229",
-                    max_tokens=1000,
+                completion = client.completion(
+                    prompt=f"\n\nHuman: {prompt}\n\nAssistant:",
+                    model="claude-2",
+                    max_tokens_to_sample=1000,
                     temperature=0.7,
-                    system="You are a professional email writing assistant. You help craft well-structured, formal emails while maintaining appropriate tone and etiquette.",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
-                    ]
                 )
                 
-                if message.content:
-                    email_text = message.content[0].text.strip()
+                if completion.completion:
+                    email_text = completion.completion.strip()
                     # Display the generated email in a nice format
                     st.markdown("### Generated Email:")
                     st.markdown("---")
@@ -113,8 +123,8 @@ Please generate a well-structured email that follows all these requirements."""
                     st.error("The AI model returned an empty response. Please try again with different input.")
                 
             except Exception as e:
-                st.error(f"Error details: {str(e)}")
-                st.info("Please make sure your Claude API key is correct.")
+                st.error(f"Error generating email. Please check your API key and try again.")
+                st.info("If the error persists, please make sure your Anthropic API key is valid.")
 
 # Add helpful tips in the sidebar
 with st.sidebar:
