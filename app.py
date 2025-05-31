@@ -1,5 +1,5 @@
 import streamlit as st
-import anthropic
+from anthropic import Anthropic, HUMAN_PROMPT, AI_PROMPT
 import os
 from dotenv import load_dotenv
 
@@ -10,9 +10,6 @@ load_dotenv()
 api_key = os.getenv("ANTHROPIC_API_KEY")
 if not api_key and hasattr(st.secrets, "ANTHROPIC_API_KEY"):
     api_key = st.secrets.ANTHROPIC_API_KEY
-
-# Initialize Anthropic client
-client = anthropic.Client(api_key=api_key)
 
 # Set page configuration
 st.set_page_config(
@@ -75,6 +72,8 @@ if st.button("Generate Email", type="primary"):
     else:
         with st.spinner("Generating your email..."):
             try:
+                anthropic = Anthropic(api_key=api_key)
+                
                 prompt = f"""Write a professional email with these details:
 To: {recipient_name}
 Title: {recipient_title}
@@ -99,11 +98,11 @@ Requirements:
 Please generate a well-structured email that follows all these requirements."""
 
                 # Generate email using Claude
-                completion = client.completion(
-                    prompt=f"\n\nHuman: {prompt}\n\nAssistant:",
+                completion = anthropic.completions.create(
                     model="claude-2",
                     max_tokens_to_sample=1000,
                     temperature=0.7,
+                    prompt=f"{HUMAN_PROMPT} {prompt}{AI_PROMPT}",
                 )
                 
                 if completion.completion:
@@ -123,7 +122,7 @@ Please generate a well-structured email that follows all these requirements."""
                     st.error("The AI model returned an empty response. Please try again with different input.")
                 
             except Exception as e:
-                st.error(f"Error generating email. Please check your API key and try again.")
+                st.error("Error generating email. Please check your API key and try again.")
                 st.info("If the error persists, please make sure your Anthropic API key is valid.")
 
 # Add helpful tips in the sidebar
