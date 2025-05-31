@@ -4,7 +4,7 @@ import google.generativeai as genai
 # Configure Gemini API
 genai.configure(api_key="AIzaSyBZirLRrzpyDlOyqrqcBIWLNkXfAs07PLg")
 
-# Safety settings - adjust these to be more permissive
+# Safety settings
 safety_settings = [
     {
         "category": "HARM_CATEGORY_HARASSMENT",
@@ -25,7 +25,7 @@ safety_settings = [
 ]
 
 # Initialize model with safety settings
-model = genai.GenerativeModel('gemini-pro', safety_settings=safety_settings)
+model = genai.GenerativeModel('gemini-1.0-pro', safety_settings=safety_settings)
 
 # Set page configuration
 st.set_page_config(
