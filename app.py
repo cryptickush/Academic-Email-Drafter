@@ -1,19 +1,34 @@
 import streamlit as st
 import google.generativeai as genai
+from dotenv import load_dotenv
 import os
 
+# Load environment variables
+load_dotenv()
+
+# Get API key from environment variable
+api_key = os.getenv("GOOGLE_API_KEY")
+
+if not api_key:
+    st.error("""
+    ⚠️ No API key found. Please follow these steps:
+    1. Rename 'env.template' to '.env'
+    2. Open .env file
+    3. Replace 'your_api_key_here' with your actual Gemini API key
+    4. Restart the application
+    
+    To get an API key:
+    1. Go to https://makersuite.google.com/app/apikey
+    2. Click 'Create API Key'
+    3. Copy the key and paste it in your .env file
+    """)
+    st.stop()
+
 try:
-    # Configure Gemini API
-    GOOGLE_API_KEY = "AIzaSyANXBY6iteyV9JOFM3uYfsKgiBifSZSnHA"
-    genai.configure(api_key=GOOGLE_API_KEY)
+    # Configure the Gemini API
+    genai.configure(api_key=api_key)
     
-    # List available models
-    for m in genai.list_models():
-        st.write(f"Model: {m.name}")
-        st.write(f"Supported generation methods: {m.supported_generation_methods}")
-        st.write("---")
-    
-    # Configure the library
+    # Configure generation parameters
     generation_config = {
         "temperature": 0.7,
         "top_p": 1,
@@ -21,12 +36,19 @@ try:
         "max_output_tokens": 2048,
     }
     
-    # Create the model - using the full model name
-    model = genai.GenerativeModel(model_name="models/gemini-pro",
+    # Initialize the model
+    model = genai.GenerativeModel(model_name="gemini-pro",
                                 generation_config=generation_config)
-
+    
 except Exception as e:
-    st.error(f"Failed to initialize Gemini: {str(e)}")
+    st.error(f"""
+    ⚠️ Error initializing Gemini API: {str(e)}
+    
+    Please check that:
+    1. Your API key is valid
+    2. You have accepted the terms of service
+    3. The API is enabled in your Google Cloud Console
+    """)
     st.stop()
 
 # Set page configuration
