@@ -1,23 +1,8 @@
 import streamlit as st
 import openai
-import os
 
-# Get the API key from Streamlit secrets
-if 'OPENAI_API_KEY' not in st.secrets:
-    st.error("""
-        ⚠️ Please set your OpenAI API key in Streamlit secrets!
-        
-        1. Copy your API key from https://platform.openai.com/api-keys
-        2. In Streamlit, click on the three dots (⋮) in the top right corner
-        3. Click on "Settings"
-        4. Under "Secrets", add your API key as:
-           OPENAI_API_KEY = "sk-your-key-here"
-        5. Click "Save" and refresh the page
-    """)
-    st.stop()
-
-# Set up OpenAI API key
-openai.api_key = st.secrets['OPENAI_API_KEY']
+# Set your OpenAI API key here
+openai.api_key = "sk-..." # Put your OpenAI API key here
 
 # Set page configuration
 st.set_page_config(
@@ -95,9 +80,9 @@ Requirements:
 4. Match the specified tone
 5. Include greeting and sign-off"""
                 
-                # Generate email using ChatGPT with simpler API call
+                # Generate email using ChatGPT
                 completion = openai.Completion.create(
-                    engine="text-davinci-003",  # Using older, more stable model
+                    engine="text-davinci-003",
                     prompt=prompt,
                     max_tokens=1000,
                     temperature=0.7,
@@ -124,8 +109,6 @@ Requirements:
                 
             except Exception as e:
                 st.error(f"Error details: {str(e)}")
-                if "Incorrect API key" in str(e):
-                    st.info("Please check that your OpenAI API key is correct in Streamlit secrets.")
 
 # Add helpful tips in the sidebar
 with st.sidebar:
