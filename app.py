@@ -3,7 +3,29 @@ import google.generativeai as genai
 
 # Configure Gemini API
 genai.configure(api_key="AIzaSyBZirLRrzpyDlOyqrqcBIWLNkXfAs07PLg")
-model = genai.GenerativeModel('gemini-pro')
+
+# Safety settings - adjust these to be more permissive
+safety_settings = [
+    {
+        "category": "HARM_CATEGORY_HARASSMENT",
+        "threshold": "BLOCK_NONE",
+    },
+    {
+        "category": "HARM_CATEGORY_HATE_SPEECH",
+        "threshold": "BLOCK_NONE",
+    },
+    {
+        "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+        "threshold": "BLOCK_NONE",
+    },
+    {
+        "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+        "threshold": "BLOCK_NONE",
+    },
+]
+
+# Initialize model with safety settings
+model = genai.GenerativeModel('gemini-pro', safety_settings=safety_settings)
 
 # Set page configuration
 st.set_page_config(
@@ -60,48 +82,47 @@ if st.button("Generate Email", type="primary"):
     else:
         with st.spinner("Generating your email..."):
             try:
-                prompt = f"""
-                Generate a professional academic email with the following details:
-                
-                To: {recipient_name}
-                Title: {recipient_title}
-                Institution: {recipient_institution}
-                
-                From: {sender_name}
-                Sender Title: {sender_title}
-                Sender Institution: {sender_institution}
-                
-                Purpose: {email_purpose}
-                Additional Context: {additional_context}
-                
-                Tone: {tone}
-                
-                Please generate a well-structured email that:
-                1. Uses appropriate academic language and formality
-                2. Is clear and concise
-                3. Follows proper email etiquette
-                4. Maintains the specified tone ({tone})
-                5. Includes a proper greeting and sign-off
-                
-                Format the email with proper spacing and structure.
-                """
+                prompt = f"""Write a professional email with these details:
+To: {recipient_name}
+Title: {recipient_title}
+Institution: {recipient_institution}
+
+From: {sender_name}
+Sender Title: {sender_title}
+Sender Institution: {sender_institution}
+
+Purpose: {email_purpose}
+Additional Context: {additional_context}
+
+Tone: {tone}
+
+Requirements:
+1. Use appropriate academic language
+2. Be clear and concise
+3. Follow proper email etiquette
+4. Match the specified tone
+5. Include greeting and sign-off"""
                 
                 response = model.generate_content(prompt)
                 
-                # Display the generated email in a nice format
-                st.markdown("### Generated Email:")
-                st.markdown("---")
-                email_container = st.container()
-                with email_container:
-                    st.markdown(f"```text\n{response.text}\n```")
-                
-                # Add copy button
-                st.markdown("---")
-                if st.button("📋 Copy to Clipboard"):
-                    st.write(response.text)
+                if response.text:
+                    # Display the generated email in a nice format
+                    st.markdown("### Generated Email:")
+                    st.markdown("---")
+                    email_container = st.container()
+                    with email_container:
+                        st.markdown(f"```text\n{response.text}\n```")
+                    
+                    # Add copy button
+                    st.markdown("---")
+                    if st.button("📋 Copy to Clipboard"):
+                        st.write(response.text)
+                else:
+                    st.error("The AI model returned an empty response. Please try again with different input.")
                 
             except Exception as e:
-                st.error("Something went wrong. Please try again.")
+                st.error(f"Error: {str(e)}")
+                st.info("If you're seeing this error, please try with a simpler request or different wording.")
 
 # Add helpful tips in the sidebar
 with st.sidebar:
