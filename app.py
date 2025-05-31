@@ -1,5 +1,5 @@
 import streamlit as st
-import google.generativeai as palm
+from openai import OpenAI
 from dotenv import load_dotenv
 import os
 
@@ -7,35 +7,33 @@ import os
 load_dotenv()
 
 # Get API key from environment variable
-api_key = os.getenv("GOOGLE_API_KEY")
+api_key = os.getenv("OPENAI_API_KEY")
 
 if not api_key:
     st.error("""
     ⚠️ No API key found. Please follow these steps:
     1. Rename 'env.template' to '.env'
     2. Open .env file
-    3. Replace 'your_api_key_here' with your actual Gemini API key
+    3. Replace 'your_openai_api_key_here' with your actual OpenAI API key
     4. Restart the application
     
     To get an API key:
-    1. Go to https://makersuite.google.com/app/apikey
-    2. Click 'Create API Key'
-    3. Copy the key and paste it in your .env file
+    1. Go to https://platform.openai.com/api-keys
+    2. Sign up or log in
+    3. Create a new API key
+    4. Copy the key and paste it in your .env file
     """)
     st.stop()
 
 try:
-    # Configure the API
-    palm.configure(api_key=api_key)
+    # Initialize OpenAI client
+    client = OpenAI(api_key=api_key)
 
 except Exception as e:
     st.error(f"""
-    ⚠️ Error initializing API: {str(e)}
+    ⚠️ Error initializing OpenAI API: {str(e)}
     
-    Please check that:
-    1. Your API key is valid
-    2. You have accepted the terms of service
-    3. The API is enabled in your Google Cloud Console
+    Please check that your API key is valid and properly set in the .env file.
     """)
     st.stop()
 
@@ -115,31 +113,36 @@ Requirements:
 4. Match the specified tone
 5. Include greeting and sign-off"""
                 
-                # Configure completion settings
-                completion = palm.generate_text(
-                    prompt=prompt,
+                # Generate email using ChatGPT
+                response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": "You are a professional email writing assistant. You help craft well-structured, formal emails while maintaining appropriate tone and etiquette."},
+                        {"role": "user", "content": prompt}
+                    ],
                     temperature=0.7,
-                    max_output_tokens=1024,
+                    max_tokens=1000
                 )
                 
-                if completion.result:
+                if response.choices[0].message.content:
+                    email_text = response.choices[0].message.content.strip()
                     # Display the generated email in a nice format
                     st.markdown("### Generated Email:")
                     st.markdown("---")
                     email_container = st.container()
                     with email_container:
-                        st.markdown(f"```text\n{completion.result}\n```")
+                        st.markdown(f"```text\n{email_text}\n```")
                     
                     # Add copy button
                     st.markdown("---")
                     if st.button("📋 Copy to Clipboard"):
-                        st.write(completion.result)
+                        st.write(email_text)
                 else:
                     st.error("The AI model returned an empty response. Please try again with different input.")
                 
             except Exception as e:
                 st.error(f"Error generating email: {str(e)}")
-                st.info("If you're seeing this error, please try with a simpler request or different wording.")
+                st.info("If you're seeing this error, please check your OpenAI API key and try again.")
 
 # Add helpful tips in the sidebar
 with st.sidebar:
