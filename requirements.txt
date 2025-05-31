@@ -1,3 +1,4 @@
-%%writefile requirements.txt
-streamlit
-google-generativeai
+# Create and write to requirements.txt using standard Python file operations
+with open("requirements.txt", "w") as f:
+    f.write("streamlit\n")
+    f.write("google-generativeai\n")
