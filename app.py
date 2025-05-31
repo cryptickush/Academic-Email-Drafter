@@ -2,8 +2,22 @@ import streamlit as st
 import openai
 import os
 
-# Set the API key directly
-openai.api_key = "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"  # Replace this with your actual API key
+# Get the API key from Streamlit secrets
+if 'OPENAI_API_KEY' not in st.secrets:
+    st.error("""
+        ⚠️ Please set your OpenAI API key in Streamlit secrets!
+        
+        1. Copy your API key from https://platform.openai.com/api-keys
+        2. In Streamlit, click on the three dots (⋮) in the top right corner
+        3. Click on "Settings"
+        4. Under "Secrets", add your API key as:
+           OPENAI_API_KEY = "sk-your-key-here"
+        5. Click "Save" and refresh the page
+    """)
+    st.stop()
+
+# Set up OpenAI API key
+openai.api_key = st.secrets['OPENAI_API_KEY']
 
 # Set page configuration
 st.set_page_config(
@@ -110,6 +124,8 @@ Requirements:
                 
             except Exception as e:
                 st.error(f"Error details: {str(e)}")
+                if "Incorrect API key" in str(e):
+                    st.info("Please check that your OpenAI API key is correct in Streamlit secrets.")
 
 # Add helpful tips in the sidebar
 with st.sidebar:
