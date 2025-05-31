@@ -2,7 +2,7 @@ import streamlit as st
 from anthropic import Anthropic
 
 # Initialize Anthropic client with your API key
-anthropic = Anthropic(api_key="your-anthropic-api-key")  # Replace with your actual API key
+anthropic = Anthropic(api_key="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")  # Replace with your actual API key
 
 # Set page configuration
 st.set_page_config(
