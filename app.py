@@ -1,11 +1,28 @@
 import streamlit as st
 import google.generativeai as genai
+import os
 
-# Configure Gemini API
-genai.configure(api_key="AIzaSyBZirLRrzpyDlOyqrqcBIWLNkXfAs07PLg")
+try:
+    # Configure Gemini API
+    GOOGLE_API_KEY = "AIzaSyBZirLRrzpyDlOyqrqcBIWLNkXfAs07PLg"
+    
+    # Configure the library
+    generation_config = {
+        "temperature": 0.7,
+        "top_p": 1,
+        "top_k": 1,
+        "max_output_tokens": 2048,
+    }
 
-# Initialize model
-model = genai.GenerativeModel('gemini-pro')
+    genai.configure(api_key=GOOGLE_API_KEY)
+    
+    # Create the model
+    model = genai.GenerativeModel(model_name="gemini-pro",
+                                generation_config=generation_config)
+
+except Exception as e:
+    st.error(f"Failed to initialize Gemini: {str(e)}")
+    st.stop()
 
 # Set page configuration
 st.set_page_config(
@@ -85,7 +102,7 @@ Requirements:
                 
                 response = model.generate_content(prompt)
                 
-                if response.text:
+                if hasattr(response, 'text') and response.text:
                     # Display the generated email in a nice format
                     st.markdown("### Generated Email:")
                     st.markdown("---")
@@ -101,7 +118,7 @@ Requirements:
                     st.error("The AI model returned an empty response. Please try again with different input.")
                 
             except Exception as e:
-                st.error(f"Error: {str(e)}")
+                st.error(f"Error generating email: {str(e)}")
                 st.info("If you're seeing this error, please try with a simpler request or different wording.")
 
 # Add helpful tips in the sidebar
