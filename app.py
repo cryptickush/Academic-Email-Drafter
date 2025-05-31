@@ -2,6 +2,7 @@ import streamlit as st
 from anthropic import Anthropic, HUMAN_PROMPT, AI_PROMPT
 import os
 from dotenv import load_dotenv
+import traceback
 
 # Load environment variables
 load_dotenv()
@@ -35,6 +36,9 @@ if not api_key:
     st.error("Please set your Anthropic API key in the .env file or Streamlit secrets.")
     st.info("Create a .env file in your project directory and add: ANTHROPIC_API_KEY=your-api-key")
     st.stop()
+
+# Initialize Anthropic client outside the try block
+anthropic = Anthropic(api_key=api_key)
 
 # Title and description
 st.title("✉️ Academic Email Generator")
@@ -72,8 +76,6 @@ if st.button("Generate Email", type="primary"):
     else:
         with st.spinner("Generating your email..."):
             try:
-                anthropic = Anthropic(api_key=api_key)
-                
                 prompt = f"""Write a professional email with these details:
 To: {recipient_name}
 Title: {recipient_title}
@@ -122,8 +124,8 @@ Please generate a well-structured email that follows all these requirements."""
                     st.error("The AI model returned an empty response. Please try again with different input.")
                 
             except Exception as e:
-                st.error("Error generating email. Please check your API key and try again.")
-                st.info("If the error persists, please make sure your Anthropic API key is valid.")
+                st.error(f"Actual error: {str(e)}")
+                st.error(f"Full traceback:\n{traceback.format_exc()}")
 
 # Add helpful tips in the sidebar
 with st.sidebar:
