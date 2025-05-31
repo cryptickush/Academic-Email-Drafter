@@ -1,5 +1,5 @@
 import streamlit as st
-import google.generativeai as genai
+import google.generativeai as palm
 from dotenv import load_dotenv
 import os
 
@@ -7,7 +7,7 @@ import os
 load_dotenv()
 
 # Get API key from environment variable
-api_key = os.getenv("AIzaSyANXBY6iteyV9JOFM3uYfsKgiBifSZSnHA")
+api_key = os.getenv("GOOGLE_API_KEY")
 
 if not api_key:
     st.error("""
@@ -25,24 +25,12 @@ if not api_key:
     st.stop()
 
 try:
-    # Configure the Gemini API
-    genai.configure(api_key=api_key)
-    
-    # Configure generation parameters
-    generation_config = {
-        "temperature": 0.7,
-        "top_p": 1,
-        "top_k": 1,
-        "max_output_tokens": 2048,
-    }
-    
-    # Initialize the model
-    model = genai.GenerativeModel(model_name="gemini-pro",
-                                generation_config=generation_config)
-    
+    # Configure the API
+    palm.configure(api_key=api_key)
+
 except Exception as e:
     st.error(f"""
-    ⚠️ Error initializing Gemini API: {str(e)}
+    ⚠️ Error initializing API: {str(e)}
     
     Please check that:
     1. Your API key is valid
@@ -127,20 +115,25 @@ Requirements:
 4. Match the specified tone
 5. Include greeting and sign-off"""
                 
-                response = model.generate_content(prompt)
+                # Configure completion settings
+                completion = palm.generate_text(
+                    prompt=prompt,
+                    temperature=0.7,
+                    max_output_tokens=1024,
+                )
                 
-                if hasattr(response, 'text') and response.text:
+                if completion.result:
                     # Display the generated email in a nice format
                     st.markdown("### Generated Email:")
                     st.markdown("---")
                     email_container = st.container()
                     with email_container:
-                        st.markdown(f"```text\n{response.text}\n```")
+                        st.markdown(f"```text\n{completion.result}\n```")
                     
                     # Add copy button
                     st.markdown("---")
                     if st.button("📋 Copy to Clipboard"):
-                        st.write(response.text)
+                        st.write(completion.result)
                 else:
                     st.error("The AI model returned an empty response. Please try again with different input.")
                 
