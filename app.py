@@ -1,41 +1,9 @@
 import streamlit as st
 import openai
-from dotenv import load_dotenv
 import os
 
-# Load environment variables
-load_dotenv()
-
-# Get API key from environment variable
-api_key = os.getenv("OPENAI_API_KEY")
-
-if not api_key:
-    st.error("""
-    ⚠️ No API key found. Please follow these steps:
-    1. Rename 'env.template' to '.env'
-    2. Open .env file
-    3. Replace 'your_openai_api_key_here' with your actual OpenAI API key
-    4. Restart the application
-    
-    To get an API key:
-    1. Go to https://platform.openai.com/api-keys
-    2. Sign up or log in
-    3. Create a new API key
-    4. Copy the key and paste it in your .env file
-    """)
-    st.stop()
-
-try:
-    # Configure OpenAI
-    openai.api_key = api_key
-
-except Exception as e:
-    st.error(f"""
-    ⚠️ Error initializing OpenAI API: {str(e)}
-    
-    Please check that your API key is valid and properly set in the .env file.
-    """)
-    st.stop()
+# Set the API key directly
+openai.api_key = "YOUR-API-KEY-HERE"  # Replace this with your actual API key
 
 # Set page configuration
 st.set_page_config(
@@ -113,19 +81,19 @@ Requirements:
 4. Match the specified tone
 5. Include greeting and sign-off"""
                 
-                # Generate email using ChatGPT
-                response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    messages=[
-                        {"role": "system", "content": "You are a professional email writing assistant. You help craft well-structured, formal emails while maintaining appropriate tone and etiquette."},
-                        {"role": "user", "content": prompt}
-                    ],
+                # Generate email using ChatGPT with simpler API call
+                completion = openai.Completion.create(
+                    engine="text-davinci-003",  # Using older, more stable model
+                    prompt=prompt,
+                    max_tokens=1000,
                     temperature=0.7,
-                    max_tokens=1000
+                    top_p=1,
+                    frequency_penalty=0,
+                    presence_penalty=0
                 )
                 
-                if response.choices[0].message['content']:
-                    email_text = response.choices[0].message['content'].strip()
+                if completion.choices[0].text:
+                    email_text = completion.choices[0].text.strip()
                     # Display the generated email in a nice format
                     st.markdown("### Generated Email:")
                     st.markdown("---")
@@ -141,8 +109,7 @@ Requirements:
                     st.error("The AI model returned an empty response. Please try again with different input.")
                 
             except Exception as e:
-                st.error(f"Error generating email: {str(e)}")
-                st.info("If you're seeing this error, please check your OpenAI API key and try again.")
+                st.error(f"Error details: {str(e)}")
 
 # Add helpful tips in the sidebar
 with st.sidebar:
