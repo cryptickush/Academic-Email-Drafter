@@ -5,6 +5,13 @@ import os
 try:
     # Configure Gemini API
     GOOGLE_API_KEY = "AIzaSyBZirLRrzpyDlOyqrqcBIWLNkXfAs07PLg"
+    genai.configure(api_key=GOOGLE_API_KEY)
+    
+    # List available models
+    for m in genai.list_models():
+        st.write(f"Model: {m.name}")
+        st.write(f"Supported generation methods: {m.supported_generation_methods}")
+        st.write("---")
     
     # Configure the library
     generation_config = {
@@ -13,11 +20,9 @@ try:
         "top_k": 1,
         "max_output_tokens": 2048,
     }
-
-    genai.configure(api_key=GOOGLE_API_KEY)
     
-    # Create the model
-    model = genai.GenerativeModel(model_name="gemini-pro",
+    # Create the model - using the full model name
+    model = genai.GenerativeModel(model_name="models/gemini-pro",
                                 generation_config=generation_config)
 
 except Exception as e:
