@@ -1,3 +1,6 @@
+import streamlit as st
+    import google.generativeai as genai
+    import os # For securely loading the API key
 %%writefile app.py
 import streamlit as st
 import google.generativeai as genai
