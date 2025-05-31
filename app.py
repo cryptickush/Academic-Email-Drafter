@@ -4,7 +4,7 @@ import os
 
 try:
     # Configure Gemini API
-    GOOGLE_API_KEY = "AIzaSyBxmw9lTDmRbY0uoLjaJePYiusM9guVix4"
+    GOOGLE_API_KEY = "AIzaSyANXBY6iteyV9JOFM3uYfsKgiBifSZSnHA"
     genai.configure(api_key=GOOGLE_API_KEY)
     
     # List available models
