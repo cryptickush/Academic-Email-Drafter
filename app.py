@@ -2,7 +2,7 @@ import streamlit as st
 import openai
 
 # Replace the text below with your OpenAI API key (it should start with 'sk-')
-openai.api_key = "sk-1234567890" # ← Replace this with your actual API key
+openai.api_key = "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" # ← Replace this with your actual API key
 
 # Set page configuration
 st.set_page_config(
