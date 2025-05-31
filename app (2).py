@@ -1,4 +1,4 @@
-%%writefile app (1).py
+%%writefile app (2).py
 import streamlit as st
 
 # --- Email Generation Logic (Simplified & Template-Based) ---
