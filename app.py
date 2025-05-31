@@ -7,7 +7,7 @@ import os
 load_dotenv()
 
 # Get API key from environment variable
-api_key = os.getenv("GOOGLE_API_KEY")
+api_key = os.getenv("AIzaSyANXBY6iteyV9JOFM3uYfsKgiBifSZSnHA")
 
 if not api_key:
     st.error("""
