@@ -1,9 +1,8 @@
 import streamlit as st
 import google.generativeai as genai
 
-# Configure Google Gemini API
-GOOGLE_API_KEY = "AIzaSyBZirLRrzpyDlOyqrqcBIWLNkXfAs07PLg"
-genai.configure(api_key=GOOGLE_API_KEY)
+# Configure Gemini API
+genai.configure(api_key="AIzaSyBZirLRrzpyDlOyqrqcBIWLNkXfAs07PLg")
 model = genai.GenerativeModel('gemini-pro')
 
 # Set page configuration
@@ -102,7 +101,7 @@ if st.button("Generate Email", type="primary"):
                     st.write(response.text)
                 
             except Exception as e:
-                st.error(f"An error occurred: {str(e)}")
+                st.error("Something went wrong. Please try again.")
 
 # Add helpful tips in the sidebar
 with st.sidebar:
