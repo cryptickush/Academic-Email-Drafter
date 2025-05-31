@@ -1,5 +1,5 @@
 import streamlit as st
-from anthropic import Anthropic, HUMAN_PROMPT, AI_PROMPT
+from anthropic import Anthropic
 import os
 from dotenv import load_dotenv
 import traceback
@@ -38,7 +38,7 @@ if not api_key:
     st.stop()
 
 # Initialize Anthropic client outside the try block
-anthropic = Anthropic(api_key=api_key)
+client = Anthropic(api_key=api_key)
 
 # Title and description
 st.title("✉️ Academic Email Generator")
@@ -100,15 +100,20 @@ Requirements:
 Please generate a well-structured email that follows all these requirements."""
 
                 # Generate email using Claude
-                completion = anthropic.completions.create(
-                    model="claude-2",
-                    max_tokens_to_sample=1000,
+                message = client.messages.create(
+                    model="claude-3-opus-20240229",
+                    max_tokens=1000,
                     temperature=0.7,
-                    prompt=f"{HUMAN_PROMPT} {prompt}{AI_PROMPT}",
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ]
                 )
                 
-                if completion.completion:
-                    email_text = completion.completion.strip()
+                if message.content:
+                    email_text = message.content[0].text.strip()
                     # Display the generated email in a nice format
                     st.markdown("### Generated Email:")
                     st.markdown("---")
