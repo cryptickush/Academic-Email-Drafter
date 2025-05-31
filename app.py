@@ -1,173 +1,73 @@
 import streamlit as st
-import requests
-import os
-from dotenv import load_dotenv
-import json
-import traceback
+from openai import OpenAI
 
-# Load environment variables
-load_dotenv()
+# Initialize OpenAI client
+client = OpenAI(api_key="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")  # Replace with your OpenAI API key
 
-# Get API key from environment variable or Streamlit secrets
-api_key = os.getenv("ANTHROPIC_API_KEY")
-if not api_key and hasattr(st.secrets, "ANTHROPIC_API_KEY"):
-    api_key = st.secrets.ANTHROPIC_API_KEY
+# Page config
+st.set_page_config(page_title="Email Generator", page_icon="✉️")
 
-# Set page configuration
-st.set_page_config(
-    page_title="Academic Email Generator",
-    page_icon="✉️",
-    layout="wide"
-)
-
-# Add custom CSS
-st.markdown("""
-    <style>
-    .stTextArea textarea {
-        height: 200px;
-    }
-    .main {
-        padding: 2rem;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# Check for API key
-if not api_key:
-    st.error("Please set your Anthropic API key in the .env file or Streamlit secrets.")
-    st.info("Create a .env file in your project directory and add: ANTHROPIC_API_KEY=your-api-key")
-    st.stop()
-
-# Title and description
-st.title("✉️ Academic Email Generator")
-st.markdown("""
-This tool helps you generate professional academic emails using Claude AI. Simply fill in the details
-below, and the AI will help craft a well-structured email for you.
-""")
+# Title
+st.title("✉️ Professional Email Generator")
+st.write("Generate professional emails with AI assistance")
 
 # Input fields
-col1, col2 = st.columns(2)
+recipient = st.text_input("To:", placeholder="e.g., Dr. Jane Smith")
+sender = st.text_input("From:", placeholder="Your name")
+subject = st.text_input("Subject:", placeholder="e.g., Research Collaboration Opportunity")
+purpose = st.text_area("What's the purpose of your email?", placeholder="e.g., I want to inquire about research opportunities in AI and machine learning")
 
-with col1:
-    recipient_name = st.text_input("Recipient's Name", placeholder="e.g., Dr. Jane Smith")
-    recipient_title = st.text_input("Recipient's Title/Position", placeholder="e.g., Professor of Computer Science")
-    recipient_institution = st.text_input("Recipient's Institution", placeholder="e.g., Stanford University")
-
-with col2:
-    sender_name = st.text_input("Your Name", placeholder="e.g., John Doe")
-    sender_title = st.text_input("Your Title/Position", placeholder="e.g., PhD Student")
-    sender_institution = st.text_input("Your Institution", placeholder="e.g., MIT")
-
-email_purpose = st.text_area("Email Purpose", placeholder="e.g., Inquiring about research opportunities in your lab")
-additional_context = st.text_area("Additional Context", placeholder="Add any specific points, requirements, or context you'd like to include in the email")
-
-# Email tone selection
+# Tone selection
 tone = st.select_slider(
     "Email Tone",
-    options=["Very Formal", "Formal", "Semi-Formal", "Professional Friendly"],
+    options=["Very Formal", "Formal", "Semi-Formal", "Friendly"],
     value="Formal"
 )
 
-def generate_email_with_claude(prompt, api_key):
-    headers = {
-        "x-api-key": api_key,
-        "content-type": "application/json",
-        "anthropic-version": "2023-06-01"
-    }
-    
-    data = {
-        "model": "claude-2",
-        "max_tokens": 1000,
-        "temperature": 0.7,
-        "messages": [{"role": "user", "content": prompt}]
-    }
-    
-    response = requests.post(
-        "https://api.anthropic.com/v1/messages",
-        headers=headers,
-        json=data
-    )
-    
-    if response.status_code != 200:
-        raise Exception(f"API request failed with status {response.status_code}: {response.text}")
-    
-    return response.json()
-
-if st.button("Generate Email", type="primary"):
-    if not all([recipient_name, email_purpose]):
-        st.error("Please fill in at least the recipient's name and email purpose.")
+if st.button("Generate Email"):
+    if not all([recipient, sender, subject, purpose]):
+        st.error("Please fill in all fields")
     else:
-        with st.spinner("Generating your email..."):
-            try:
-                prompt = f"""Write a professional email with these details:
-To: {recipient_name}
-Title: {recipient_title}
-Institution: {recipient_institution}
+        try:
+            with st.spinner("Generating your email..."):
+                # Create the prompt
+                prompt = f"""Write a professional email:
+                To: {recipient}
+                From: {sender}
+                Subject: {subject}
+                Purpose: {purpose}
+                Tone: {tone}
 
-From: {sender_name}
-Sender Title: {sender_title}
-Sender Institution: {sender_institution}
+                Make it concise, professional, and well-structured."""
 
-Purpose: {email_purpose}
-Additional Context: {additional_context}
+                # Get response from OpenAI
+                response = client.chat.completions.create(
+                    model="gpt-4-turbo-preview",
+                    messages=[
+                        {"role": "system", "content": "You are a professional email writing assistant."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.7
+                )
 
-Tone: {tone}
-
-Requirements:
-1. Use appropriate academic language
-2. Be clear and concise
-3. Follow proper email etiquette
-4. Match the specified tone
-5. Include greeting and sign-off
-
-Please generate a well-structured email that follows all these requirements."""
-
-                # Generate email using Claude
-                response = generate_email_with_claude(prompt, api_key)
+                # Display the email
+                email = response.choices[0].message.content
+                st.markdown("### Generated Email")
+                st.text_area("", email, height=300)
                 
-                if response and response.get('content') and response['content'][0].get('text'):
-                    email_text = response['content'][0]['text'].strip()
-                    # Display the generated email in a nice format
-                    st.markdown("### Generated Email:")
-                    st.markdown("---")
-                    email_container = st.container()
-                    with email_container:
-                        st.markdown(f"```text\n{email_text}\n```")
-                    
-                    # Add copy button
-                    st.markdown("---")
-                    if st.button("📋 Copy to Clipboard"):
-                        st.write(email_text)
-                else:
-                    st.error("The AI model returned an empty response. Please try again with different input.")
-                
-            except Exception as e:
-                st.error(f"Actual error: {str(e)}")
-                st.error(f"Full traceback:\n{traceback.format_exc()}")
+                # Copy button
+                st.button("Copy to Clipboard", type="secondary", key="copy", 
+                         on_click=lambda: st.write(email))
 
-# Add helpful tips in the sidebar
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
+
+# Sidebar tips
 with st.sidebar:
-    st.markdown("### 📝 Tips for Better Results")
+    st.markdown("### 💡 Tips")
     st.markdown("""
-    1. Be specific about your purpose
-    2. Provide relevant context
-    3. Include any specific requirements
-    4. Choose the appropriate tone
-    5. Review and edit the generated email
-    """)
-    
-    st.markdown("### 🎯 Common Use Cases")
-    st.markdown("""
-    - Research collaboration inquiries
-    - Graduate program applications
-    - Conference submissions
-    - Recommendation letter requests
-    - Meeting scheduling
-    - Research guidance
-    """)
-    
-    st.markdown("### ℹ️ About")
-    st.markdown("""
-    This app uses Claude, a powerful AI model by Anthropic, 
-    to help you generate professional academic emails.
+    - Be clear about your purpose
+    - Include relevant details
+    - Choose the right tone
+    - Review before sending
     """) 
