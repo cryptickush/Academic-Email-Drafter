@@ -1,7 +1,8 @@
 import streamlit as st
-from anthropic import Anthropic
+import requests
 import os
 from dotenv import load_dotenv
+import json
 import traceback
 
 # Load environment variables
@@ -37,9 +38,6 @@ if not api_key:
     st.info("Create a .env file in your project directory and add: ANTHROPIC_API_KEY=your-api-key")
     st.stop()
 
-# Initialize Anthropic client outside the try block
-client = Anthropic(api_key=api_key)
-
 # Title and description
 st.title("✉️ Academic Email Generator")
 st.markdown("""
@@ -69,6 +67,31 @@ tone = st.select_slider(
     options=["Very Formal", "Formal", "Semi-Formal", "Professional Friendly"],
     value="Formal"
 )
+
+def generate_email_with_claude(prompt, api_key):
+    headers = {
+        "x-api-key": api_key,
+        "content-type": "application/json",
+        "anthropic-version": "2023-06-01"
+    }
+    
+    data = {
+        "model": "claude-2",
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "messages": [{"role": "user", "content": prompt}]
+    }
+    
+    response = requests.post(
+        "https://api.anthropic.com/v1/messages",
+        headers=headers,
+        json=data
+    )
+    
+    if response.status_code != 200:
+        raise Exception(f"API request failed with status {response.status_code}: {response.text}")
+    
+    return response.json()
 
 if st.button("Generate Email", type="primary"):
     if not all([recipient_name, email_purpose]):
@@ -100,20 +123,10 @@ Requirements:
 Please generate a well-structured email that follows all these requirements."""
 
                 # Generate email using Claude
-                message = client.messages.create(
-                    model="claude-3-opus-20240229",
-                    max_tokens=1000,
-                    temperature=0.7,
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
-                    ]
-                )
+                response = generate_email_with_claude(prompt, api_key)
                 
-                if message.content:
-                    email_text = message.content[0].text.strip()
+                if response and response.get('content') and response['content'][0].get('text'):
+                    email_text = response['content'][0]['text'].strip()
                     # Display the generated email in a nice format
                     st.markdown("### Generated Email:")
                     st.markdown("---")
