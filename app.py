@@ -1,5 +1,5 @@
 import streamlit as st
-from openai import OpenAI
+import openai
 from dotenv import load_dotenv
 import os
 
@@ -26,8 +26,8 @@ if not api_key:
     st.stop()
 
 try:
-    # Initialize OpenAI client
-    client = OpenAI(api_key=api_key)
+    # Configure OpenAI
+    openai.api_key = api_key
 
 except Exception as e:
     st.error(f"""
@@ -114,7 +114,7 @@ Requirements:
 5. Include greeting and sign-off"""
                 
                 # Generate email using ChatGPT
-                response = client.chat.completions.create(
+                response = openai.ChatCompletion.create(
                     model="gpt-3.5-turbo",
                     messages=[
                         {"role": "system", "content": "You are a professional email writing assistant. You help craft well-structured, formal emails while maintaining appropriate tone and etiquette."},
@@ -124,8 +124,8 @@ Requirements:
                     max_tokens=1000
                 )
                 
-                if response.choices[0].message.content:
-                    email_text = response.choices[0].message.content.strip()
+                if response.choices[0].message['content']:
+                    email_text = response.choices[0].message['content'].strip()
                     # Display the generated email in a nice format
                     st.markdown("### Generated Email:")
                     st.markdown("---")
