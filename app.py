@@ -1,17 +1,8 @@
 import streamlit as st
 import google.generativeai as genai
-from dotenv import load_dotenv
-import os
-
-# Load environment variables
-load_dotenv()
 
 # Configure Google Gemini API
-GOOGLE_API_KEY = os.getenv("AIzaSyBZirLRrzpyDlOyqrqcBIWLNkXfAs07PLg")
-if not GOOGLE_API_KEY:
-    st.error("Please set your GOOGLE_API_KEY in the .env file")
-    st.stop()
-
+GOOGLE_API_KEY = "AIzaSyBZirLRrzpyDlOyqrqcBIWLNkXfAs07PLg"
 genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel('gemini-pro')
 
@@ -69,33 +60,33 @@ if st.button("Generate Email", type="primary"):
         st.error("Please fill in at least the recipient's name and email purpose.")
     else:
         with st.spinner("Generating your email..."):
-            prompt = f"""
-            Generate a professional academic email with the following details:
-            
-            To: {recipient_name}
-            Title: {recipient_title}
-            Institution: {recipient_institution}
-            
-            From: {sender_name}
-            Sender Title: {sender_title}
-            Sender Institution: {sender_institution}
-            
-            Purpose: {email_purpose}
-            Additional Context: {additional_context}
-            
-            Tone: {tone}
-            
-            Please generate a well-structured email that:
-            1. Uses appropriate academic language and formality
-            2. Is clear and concise
-            3. Follows proper email etiquette
-            4. Maintains the specified tone ({tone})
-            5. Includes a proper greeting and sign-off
-            
-            Format the email with proper spacing and structure.
-            """
-            
             try:
+                prompt = f"""
+                Generate a professional academic email with the following details:
+                
+                To: {recipient_name}
+                Title: {recipient_title}
+                Institution: {recipient_institution}
+                
+                From: {sender_name}
+                Sender Title: {sender_title}
+                Sender Institution: {sender_institution}
+                
+                Purpose: {email_purpose}
+                Additional Context: {additional_context}
+                
+                Tone: {tone}
+                
+                Please generate a well-structured email that:
+                1. Uses appropriate academic language and formality
+                2. Is clear and concise
+                3. Follows proper email etiquette
+                4. Maintains the specified tone ({tone})
+                5. Includes a proper greeting and sign-off
+                
+                Format the email with proper spacing and structure.
+                """
+                
                 response = model.generate_content(prompt)
                 
                 # Display the generated email in a nice format
@@ -107,8 +98,8 @@ if st.button("Generate Email", type="primary"):
                 
                 # Add copy button
                 st.markdown("---")
-                st.button("📋 Copy to Clipboard", 
-                         on_click=lambda: st.write(response.text))
+                if st.button("📋 Copy to Clipboard"):
+                    st.write(response.text)
                 
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
