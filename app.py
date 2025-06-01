@@ -14,7 +14,7 @@ try:
 except KeyError:
     st.error("""Please set up your OpenAI API key in Streamlit secrets with this format:
     [openai]
-    OPENAI_API_KEY = "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"
+    OPENAI_API_KEY = "sk-your-key-here"
     """)
     st.stop()
 except Exception as e:
@@ -56,11 +56,10 @@ def generate_email(recipient, sender, subject, purpose, tone):
             ],
             temperature=0.7
         )
-        # Corrected return statement to access the generated content
         return response.choices[0].message.content
     except Exception as e:
         st.error(f"An error occurred during email generation: {e}")
-        return None # Return None or an empty string in case of error
+        return None
 
 # Button to generate email and display the result
 if st.button("Generate Email"):
