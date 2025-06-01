@@ -6,9 +6,9 @@ st.set_page_config(page_title="Email Generator", page_icon="✉️")
 
 # Initialize OpenAI client
 try:
-    client = OpenAI(api_key="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")  # Replace with your actual OpenAI API key
+    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 except Exception as e:
-    st.error("Error initializing OpenAI client. Please check your API key.")
+    st.error("Error initializing OpenAI client. Please check your API key in Streamlit secrets.")
     st.error(str(e))
     st.stop()
 
