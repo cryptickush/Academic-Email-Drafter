@@ -14,7 +14,7 @@ try:
 except KeyError:
     st.error("""Please set up your OpenAI API key in Streamlit secrets with this format:
     [openai]
-    OPENAI_API_KEY = "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"
+    OPENAI_API_KEY = "sk-your-key-here" # <--- This is just an instruction for the user
     """)
     st.stop()
 except Exception as e:
