@@ -6,7 +6,17 @@ st.set_page_config(page_title="Email Generator", page_icon="✉️")
 
 # Initialize OpenAI client
 try:
-    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+    api_key = st.secrets["openai"]["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"]
+    if not api_key.startswith("sk-"):
+        st.error("Invalid API key format. The key should start with 'sk-'")
+        st.stop()
+    client = OpenAI(api_key=api_key)
+except KeyError:
+    st.error("""Please set up your OpenAI API key in Streamlit secrets with this format:
+    [openai]
+    OPENAI_API_KEY = "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"
+    """)
+    st.stop()
 except Exception as e:
     st.error("Error initializing OpenAI client. Please check your API key in Streamlit secrets.")
     st.error(str(e))
