@@ -6,7 +6,7 @@ st.set_page_config(page_title="Email Generator", page_icon="✉️")
 
 # Initialize OpenAI client
 try:
-    api_key = st.secrets["openai"]["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"]
+    api_key = st.secrets["openai"]["OPENAI_API_KEY"]
     if not api_key.startswith("sk-"):
         st.error("Invalid API key format. The key should start with 'sk-'")
         st.stop()
@@ -29,7 +29,7 @@ st.title("✉️ Professional Email Generator")
 recipient = st.text_input("To:", placeholder="e.g., Dr. Jane Smith")
 sender = st.text_input("From:", placeholder="Your name")
 subject = st.text_input("Subject:", placeholder="e.g., Research Collaboration Opportunity")
-purpose = st.text_area("What's the purpose of your email?", 
+purpose = st.text_area("What's the purpose of your email?",
                       placeholder="e.g., I want to inquire about research opportunities")
 
 # Tone selection
@@ -51,35 +51,23 @@ def generate_email(recipient, sender, subject, purpose, tone):
                 Subject: {subject}
                 Purpose: {purpose}
                 Tone: {tone}
-                
+
                 Make it concise and professional."""}
             ],
             temperature=0.7
         )
+        # Corrected return statement to access the generated content
         return response.choices[0].message.content
     except Exception as e:
-        st.error("Error generating email:")
-        st.error(str(e))
-        return None
+        st.error(f"An error occurred during email generation: {e}")
+        return None # Return None or an empty string in case of error
 
+# Button to generate email and display the result
 if st.button("Generate Email"):
-    if not all([recipient, sender, subject, purpose]):
-        st.error("Please fill in all fields")
+    if not purpose:
+        st.warning("Please enter the purpose of the email.")
     else:
-        with st.spinner("Generating your email..."):
-            email = generate_email(recipient, sender, subject, purpose, tone)
-            if email:
-                st.markdown("### Generated Email")
-                st.text_area("", email, height=300)
-                if st.button("Copy to Clipboard"):
-                    st.write(email)
-
-# Tips
-with st.sidebar:
-    st.markdown("### 💡 Tips")
-    st.markdown("""
-    - Be clear about your purpose
-    - Include relevant details
-    - Choose the right tone
-    - Review before sending
-    """) 
+        generated_email = generate_email(recipient, sender, subject, purpose, tone)
+        if generated_email:
+            st.subheader("Generated Email:")
+            st.text_area("Email Content", generated_email, height=300)
